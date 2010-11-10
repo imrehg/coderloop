@@ -1,0 +1,73 @@
+#!/usr/bin/python
+"""
+Submission for coderloop/passfinder
+"""
+
+import sys
+# Depreciated in newer Pythons
+from string import split
+
+def hexcode(code):
+    """ 
+    Turn string into hex-formatted chars as explained at the problem setting page
+    """
+    result = []
+    for i in xrange(len(code)):
+        result += [hex(ord(code[i]))]
+    return "".join(result)
+
+def findcode(letternum, text):
+    """ Find the most common substring by dictionary lookup """
+    codes = {}
+    lastpos = {}
+
+    textlen = len(text)
+    ## Iterate through the string with blocks equal to the code length
+    for i in xrange(textlen-letternum+1):
+        substring = text[i:(i+letternum)]
+        ### This does not work in python 2.3.0
+        # codes[substring] = \
+        #       codes[substring]+1 if codes.has_key(substring) else 1
+        #### This will be depreciated later and seems slower too
+        # if codes.has_key(substring):
+        if substring in codes:
+            # have to check for overlap. if there is one,
+            # then this is not good new substring
+            if (lastpos[substring] + letternum) <= i:
+                codes[substring] += 1
+                lastpos[substring] = i
+        else:
+            codes[substring] = 1
+            lastpos[substring] = i
+
+    # Find the most common substring
+    maxrecurrence = 0
+    solution = None
+    for key in codes.iterkeys():
+        if codes[key] > maxrecurrence:
+            maxrecurrence = codes[key]
+            solution = key
+
+    return solution
+
+def main(argv=None):
+    """ Load data and run the analysis """
+    if (argv==None):
+        argv = sys.argv
+
+    # Load information from file
+    filename = argv[1]
+    infile = open(filename, 'r') 
+    for line in infile.readlines():
+        if (len(line) < 2):
+            continue
+        # In case of newer Pythons, could use partition()
+        splitted = split(line.strip(), ' ')
+        letternum = int(splitted[0])
+        text = splitted[1]
+        print hexcode(findcode(letternum, text))
+
+if __name__ == "__main__":
+    main()
+    # import cProfile
+    # cProfile.run('main()')
