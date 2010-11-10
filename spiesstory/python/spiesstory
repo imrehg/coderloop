@@ -1,0 +1,49 @@
+#!/usr/bin/python
+import sys
+
+def caesar(n):
+   """
+   Get the code number: how many positions we need to shift the letters
+   (Clue: Ceasar-cypher)
+   """
+   while n < 0:
+      n += 26
+   return (n % 26)
+
+def decode(code, line):
+   """
+   Decode this line with the given Caesar-cypher shift number. Note, encoding is just
+   passing -code to the same finction (as long as 0<=code<26)
+   """
+   out = []
+   for i in xrange(len(line)):
+      char = line[i]
+      if char.isalpha():
+         newch = ord(char) - code
+         if (char.isupper() & (newch > 90)) | (char.islower() & (newch > 122)):
+            newch -= 26
+         if (char.isupper() & (newch < 65)) | (char.islower() & (newch < 97)):
+            newch += 26
+         out += [chr(newch)]
+      else:
+         out += char
+   return "".join(out)
+
+def main(argv=None):
+   if (argv==None):
+      argv = sys.argv
+
+   # Load information from file
+   filename = argv[1]
+   f = open(filename, 'r') 
+   n = int(f.readline())
+   code = caesar(n)
+   for line in f.readlines():
+      if (line == '\n'):
+         continue
+      # Don't touch end of line characters, not sure what does the page require
+      sys.stdout.write(decode(code, line))
+
+if __name__ == "__main__":
+   main()
+
