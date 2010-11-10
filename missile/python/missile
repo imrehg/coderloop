@@ -1,0 +1,86 @@
+#!/usr/bin/python
+import sys
+
+def findlongest(nums):
+   """
+   Dynamic programming: O(n^2)
+
+   based on:
+   http://www.algorithmist.com/index.php/Longest_Increasing_Subsequence#Dynamic_Programming
+   """
+   n = len(nums)
+   if n == 0:
+      return 0
+
+   length = [1]*n
+   path = range(n)
+
+   for i in xrange(1, n):
+      for j in xrange(0, i):
+         if (nums[i] > nums[j]) and (length[i] < (length[j]+1)):
+            length[i] = length[j] + 1
+            path[i] = j
+
+   return max(length)
+
+
+def findlongest2(nums):
+   """
+   Clever solution O(n log n)
+
+   based on:
+   http://www.algorithmist.com/index.php/Longest_Increasing_Subsequence#Faster_Algorithm
+   """
+   n = len(nums)
+   if n == 0:
+      return 0
+
+   # Add the first index to the list
+   # a[i] is the index of the smallest final value
+   # for an increasing subsequence with length i
+   a = [0]
+
+   # Loop through all the other elemts
+   for i in xrange(n):
+      if (nums[a[-1]] < nums[i]):
+         a.append(i)
+         continue
+
+      # Binary search to find which subsequent length this will be
+      u = 0
+      v = len(a)-1
+      while u < v:
+         c = (u + v) // 2
+         if (nums[a[c]] < nums[i]):
+            u = c + 1
+         else:
+            v = c
+      
+      # Replace the element in the helper list if smaller than we
+      # had already
+      if (nums[i] < nums[a[u]]):
+         a[u] = i
+
+   return len(a)
+   
+
+def main(argv=None):
+   if (argv==None):
+      argv = sys.argv
+
+   # Load information from file
+   filename = argv[1]
+   f = open(filename, 'r') 
+   nums = []
+   for line in f.readlines():
+      nums.append(int(line))
+
+   # # Dynamic programming
+   # print findlongest(nums)
+
+   # Test+Search
+   print findlongest2(nums)
+
+
+if __name__ == "__main__":
+   main()
