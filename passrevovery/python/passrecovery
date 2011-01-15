@@ -1,0 +1,122 @@
+#!/usr/bin/python
+"""
+Pass recovery - When your boss locked himself out
+
+Houston, YOU have a problem (and when we say you, we mean YOU).
+Your boss has lost his mainframe's password and the sysadmin is
+on holiday and he is unreachable of course.
+He remembered choosing his password meeting internal policy:
+Password length must be between 5 and 8 chars
+Password must contains at least one digit
+
+He also remembered choosing his password as a combination of two
+words from the body of his favorite text book.
+The password policy had required him to make the password between
+5 and 8 characters long with at least one "digit" character, so your
+boss had also incorporated a numeral into the password.
+"Either 0, 2, 4, or 8, between the two words" he recalled. Also, to
+save typing effort, he had used only lowercase for the letters.
+What you can do is to access at the mainframe backup data where
+the system password file is saved. The file contains the encrypted
+password. The mainframe login program uses crypt, so you can invoke
+"man crypt" and see how crypt works.
+
+Having the encrypted password, and the content of his favorite text book,
+could you help him to recover his lost password?
+Write a program that accepts only one parameter on the command line.
+This is the name of the file containing the encrypted password and the
+dictionary as described by the Input Specifications section. Your program
+should output on stdout the decrypted password - as specified by the
+Output Specifications section.
+"""
+import crypt
+import re
+import sys
+
+NUMBERS = [0, 2, 4, 6, 8]
+
+def runtest(test, word1, word2, numbers):
+    """
+    Run the tests for two words and set of numbers as
+    the boss defined the form of his password
+    """
+    salt = test[0:2]
+    found = False
+    result = ''
+    for num in numbers:
+        testword = word1+str(num)+word2
+        if (test == crypt.crypt(testword, salt)):
+            found = True
+            result = testword
+            break
+        testword = word2+str(num)+word1
+        if (test == crypt.crypt(testword, salt)):
+            found = True
+            result = testword
+            break
+    return (found, result)
+
+def prepare(text):
+    """
+    Prepare text by splitting into words, removing
+    duplicates and sorting by length
+    """
+    text = text.strip().lower()
+    words = re.split('[^a-z]+', text)
+    data = {}
+    for word in words:
+        wlen = len(word)
+        if (wlen <= 6) & (not (word in data)):
+            data[word] = wlen
+    goodwords = []
+    for key, value in data.iteritems():
+        goodwords.append((key, value))
+    sortwords = sorted(goodwords, key=lambda elem: elem[1])
+    return sortwords
+    
+def findpass(testpass, text):
+    """
+    Find password by first preparing the text then running the
+    test on the fewest comparison that are needed
+    """
+    sortwords = prepare(text)
+    totalwords = len(sortwords)
+    found = False
+    result = ''
+    for low in xrange(totalwords-1):
+        wlow = sortwords[low]
+        wloww = wlow[0]
+        wlowlen = wlow[1]
+        for high in xrange(totalwords-1, low, -1):
+            whigh = sortwords[high]
+            whighw = whigh[0]
+            sumlen = wlowlen + whigh[1]
+            if (4 <= sumlen <= 7):
+                found, result = runtest(testpass, wloww, whighw, NUMBERS)
+            if found:
+                break
+        if found:
+            break
+    return result
+
+def main(argv=None):
+    """
+    Input and test
+    """
+    if not argv:
+        argv = sys.argv
+
+    if len(argv) < 2:
+        sys.exit(1)
+
+    filename = argv[1]
+    infile = open(filename, "r")
+    testpass = infile.readline().strip()
+    text = ''
+    for line in infile:
+        text += line.strip()+" "
+    print(findpass(testpass, text))
+
+if __name__ == "__main__":
+    main()
+
