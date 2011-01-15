@@ -1,0 +1,29 @@
+crypt ( 3C ) C Library Functions crypt ( 3C )
+
+NAME
+
+    crypt - generate encryption 
+
+SYNOPSIS
+
+    char *crypt(const char *key, const char *salt); 
+
+DESCRIPTION
+
+	crypt( ) is the password encryption function. It is based on a 
+one-way encryption algorithm with variations intended (among other 
+things) to frustrate use of hardware implementations of a key search.
+
+	key is the input string to encrypt, for instance, a user's typed 
+password. Only the first eight characters are used; the rest are 
+ignored. salt is a two-character string chosen from the set 
+[a-zA-Z0-9./]; this string is used to perturb the hashing algorithm in 
+one of 4096 different ways, after which the input string is used as the 
+key to repeatedly encrypt a constant string. The returned value points 
+to the encrypted input string. The first two characters of the return 
+value are the salt itself. 
+
+NOTES
+
+    The return value for crypt( ) points to static data that are 
+overwritten by each call.
