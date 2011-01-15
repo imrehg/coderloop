@@ -1,0 +1,51 @@
+#!/usr/bin/python
+
+import sys
+from bisect import bisect_left
+
+def input(filename):
+    f = open(filename, "r")
+    n = int(f.readline())
+    lines = int(n / 80)
+    if (n % 80 > 0):
+        lines += 1
+    for i in range(lines):
+        f.readline()
+    g = int(f.readline().strip())
+    plist = []
+    for line in f:
+        plist.append([int(x) for x in line.split()])
+    f.close
+    return plist
+
+
+def predict(argv=None):
+    if argv == None:
+        argv = sys.argv
+
+    # Load intervals and sort them in increasing end value
+    plist = input(argv[1])
+    plist = sorted(plist, key=lambda interval: interval[1])
+    n = len(plist)
+    stops = [0] * n
+    for i in range(n):
+        stops[i] = plist[i][1]
+    
+    # find the index+1 for the left-closest non-overlaping interval
+    pj = [0] * n
+    for i in range(1,n):
+        pj[i] = bisect_left(stops, plist[i][0])
+
+    # Memo of best solutions
+    M = [0] * (n + 1)
+    for i in range(n):
+        a = plist[i][2] + M[pj[i]]
+        b = M[i]
+        M[i+1] = a if (a > b) else b
+    print "%d" %(M[-1])
+
+
+if __name__ == "__main__":
+    predict()
+#     import cProfile
+#     cProfile.run("predict()")
