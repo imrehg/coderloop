@@ -1,0 +1,100 @@
+#!/usr/bin/python
+"""
+You are working for a state of the art search engine. Today you are
+attending a (very-long-and-boring) meeting with the head of marketing
+Tom, your boss Alice and the head of sysadmin, Bob.
+
+You are almost sleeping when something interrupt your nap...
+
+Tom: "...bla bla bla and this is how we will render the top five queries
+searched by our users"
+
+Alice: "It seems so easy! Can you do it for this evening?"
+
+Silence. Then you wake up and realize they are talking to you...
+
+You: "Well ehm ehy ehrr... Can you repeat please? I have just miss last
+part of ...what?"
+
+Tom: "Sure! Every day users type any kind of queries in our search
+engine. We want to find the top five queries entered by our users
+every day and print them on the website"
+
+Alice: "And they are printed in red, in a small square and yadda yadda
+bla bla bla in Times New Roman and yadda yadda ..."
+
+You: "Ok got it. Bob, do we have these info logged anywhere?"
+
+Bob: "Sure! Every search is logged in a giant file. Each log line has
+the date and time of the search, the IP of the user and the query they
+have made."
+
+Alice: "Super! You have everything you need! Can you write this
+program by this evening?"
+
+Write a program that takes a single argument on the command line. This
+argument is the name of the log file you have to open and parse
+it. Your program should then find the top five queries (the 5 queries
+typed most frequently, order by frequency) and print them one after
+the other - separated by a newline.
+
+As a brilliant engineer, you are also aware that the log file can be
+several Terabyte long, so your program must be very fast but efficient
+managing resources (memory, harddrive, etc.).
+
+Input specifications
+
+The log file is a (very very long) sequence of lines. Each line is
+separated by a newline ("\n").
+
+Each line starts with the date and time of the log, followed by the
+string "new query". After that, the IP of the user and the query
+string are logged.
+
+The exact format of each line is:
+[Date and Time] new query: [ip=x.x.x.x, query=a string representing the query]
+You can assume a case sensitive comparison when comparing two queries
+(vMs is different from VMS).
+E.g.:
+[Fri Jan 07 17:46:30 CET 2011] new query: [ip=196.33.110.95, query=picturesque liar]
+"""
+import sys
+import re
+
+def reducer(part1, part2):
+    """
+    Combining the query counts
+    """
+    for key in part2.keys():
+        if key in part1:
+            part1[key] += part2[key]
+        else:
+            part1[key] = part2[key]
+    return part1
+
+def main(argv=None):
+    """
+    Run puzzle
+    """
+    if argv is None:
+        argv = sys.argv
+
+    if len(argv) < 2:
+        sys.exit(1)
+
+    requery = re.compile(r"query=(?P<query>.+)]$")
+    findquery = lambda log: {requery.search(log).group('query') : 1}
+
+    filename = sys.argv[1]
+    infile = open(filename, "r")
+    # catalog = reduce(reducer, map(findquery, infile.readlines()))
+    catalog = reduce(reducer, [findquery(line) for line in infile.readlines()])
+
+    queries = sorted(catalog.keys(), key=lambda x: -catalog[x])
+    maxquery = 5
+    for i in xrange(maxquery):
+        print queries[i]
+
+
+if __name__ == "__main__":
+    main()
